@@ -6,7 +6,7 @@ import websockets
 import json
 import socket
 import sys
-from scapy.all import *
+import threading
 
 config = None
 

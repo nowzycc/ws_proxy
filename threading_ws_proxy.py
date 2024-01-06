@@ -29,8 +29,8 @@ def udp2ws_handle(wait_ws:threading.Semaphore,wait_udp:threading.Semaphore):
     global address
     while True:
         data,address = socket_handle.recvfrom(4096)
-        print('msg of socket2ws:',data)
-        websocket_handle.send(data)
+        print('msg of socket ---> ws:',data)
+        websocket_handle.send_binary(data)
 
 
 def ws2udp_handle(wait_ws:threading.Semaphore,wait_udp:threading.Semaphore):
@@ -43,9 +43,9 @@ def ws2udp_handle(wait_ws:threading.Semaphore,wait_udp:threading.Semaphore):
     print('开启ws2socket转发')
     global address
     while True:
-        data = websocket_handle.recv()
-        print('msg of ws2socket:',data)
-        socket_handle.sendto(data,address)
+        data_frame = websocket_handle.recv_frame()
+        print('msg of ws ---> socket:',data_frame.data)
+        socket_handle.sendto(data_frame.data,address)
 
 def main():
     print('初始化ing')

@@ -13,6 +13,7 @@ config = None
 def listen_udp(sock,websocket):
     while True:
         server,data = sock.recvfrom(1024)
+        print('msg of socket ---> ws:',data)
         websocket.send(data)
 
 async def ws2socket(websocket, path):
@@ -29,6 +30,7 @@ async def ws2socket(websocket, path):
         listen_threading.daemon = True
     while True:
         data = await websocket.recv()
+        print('msg of ws ---> socket:',data)
         # pkt = IP(src='127.0.0.1', dst=dst)/UDP(dport=dport,sport=sport)/data
         # send(pkt)
         sock.sendto(data,(dst,dport))

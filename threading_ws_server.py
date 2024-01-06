@@ -1,14 +1,8 @@
-#!/usr/bin/python3
-# -*- coding: UTF-8 -*-
-
-import asyncio
-import websockets
-import json
-import socket
 import sys
+import json
+from  websockets.sync.server import serve
+import socket
 import threading
-
-config = None
 
 def listen_udp(sock,websocket):
     print('udp 线程启动')
@@ -18,7 +12,7 @@ def listen_udp(sock,websocket):
         # await websocket.send(data)
         websocket.send(data)
 
-async def ws2socket(websocket, path):
+def ws2socket(websocket):
     print('收到连接',websocket.remote_address)
     global config
     dport = config['game_server_port']
@@ -33,12 +27,11 @@ async def ws2socket(websocket, path):
         listen_threading.daemon = True
         listen_threading.start()
     while True:
-        data = await websocket.recv()
+        data = websocket.recv()
         print('msg of ws ---> socket:',data)
         # pkt = IP(src='127.0.0.1', dst=dst)/UDP(dport=dport,sport=sport)/data
         # send(pkt)
         sock.sendto(data,(dst,dport))
-        
 
 def main():
     app_name = sys.argv[1]
@@ -47,8 +40,7 @@ def main():
         config = json.load(f)
     config = config[app_name]
     print(config)
-    start_server = websockets.serve(ws2socket, "192.168.100.77", 9999)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
+    with serve(ws2socket,"192.168.100.77", 9999) as server:
+        server.serve_forever()
 
 main()

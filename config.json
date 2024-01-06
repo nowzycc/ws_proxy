@@ -1,5 +1,5 @@
 {
     "ws_server_entry_point" : "ws://192.168.100.78:8001/ws_test/",
-    "game_server_port" : 12345,
+    "game_server_port" : 12344,
     "game_server_protrocl" : "udp"
 }

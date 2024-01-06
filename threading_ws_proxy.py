@@ -43,9 +43,9 @@ def ws2udp_handle(wait_ws:threading.Semaphore,wait_udp:threading.Semaphore):
     print('开启ws2socket转发')
     global address
     while True:
-        data_frame = websocket_handle.recv_frame()
-        print('msg of ws ---> socket:',data_frame.data)
-        socket_handle.sendto(data_frame.data,address)
+        data = websocket_handle.recv()
+        print('msg of ws ---> socket:',data)
+        socket_handle.sendto(data,address)
 
 def main():
     print('初始化ing')

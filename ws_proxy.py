@@ -3,6 +3,20 @@ import threading
 import socket
 import websockets.sync.client
 import json
+import selectors
+
+ser = None
+def create_selector(work_mode:str):
+    global ser
+    if work_mode == 'default':
+        ser = selectors.DefaultSelector()
+    if work_mode == 'select':
+        ser = selectors.SelectSelector()
+    if work_mode == 'poll':
+        ser = selectors.PollSelector()
+    if work_mode == 'epoll':
+        ser = selectors.EpollSelector()
+    return ser
 
 class ws_proxy:
     def __init__(self,name) -> None:
@@ -13,10 +27,10 @@ class ws_proxy:
     def __heartbeat_handle(self,resource_key,sleep_time):
         pass
 
-    def __init_proxy_resource_dict(self,proxy_port,proxy_protocol):
+    def __init_proxy_resource_dict(self,proxy_port,proxy_protocol,ws_entry_point):
         self.proxy_resource_dict[(proxy_port,proxy_protocol)] = {
             "websocket_handle":None,
-            'entry_point':None,
+            'entry_point':ws_entry_point,
             "socket_handle":None,
             'work_mode':None,
             "threading_handles":{
@@ -30,15 +44,25 @@ class ws_proxy:
     def __get_proxy_resource_dict(self,proxy_port,proxy_protocol):
         return self.proxy_resource_dict[(proxy_port,proxy_protocol)]
 
-    def init_proxy(self,proxy_port,proxy_protocol,work_mode):
+    def init_proxy(self,ws_entry_point,proxy_port,proxy_protocol,work_mode):
         self.proxy_address_list.append((proxy_port,proxy_protocol))
-        self.__init_proxy_resource_dict(proxy_port,proxy_protocol)
+        self.__init_proxy_resource_dict(proxy_port,proxy_protocol,ws_entry_point)
         if work_mode == 'sync_thread':
             self.__init_proxy_with_sync_thread(proxy_port,proxy_protocol)
         if work_mode == 'sync_process':
             pass
+        if work_mode == 'select':
+            global ser
+            if ser == None:
+                raise '未初始化selector'
         if work_mode == 'async':
             self.__init_proxy_with_async(proxy_port,proxy_protocol)
+
+    def __init_proxy_with_select(self,ser,proxy_port,proxy_protocol):
+        if proxy_protocol == 'udp':
+            pass
+        if proxy_protocol == 'tcp':
+            pass
 
     def __init_proxy_with_sync_thread(self,proxy_port,proxy_protocol):
         resource_dict = self.__get_proxy_resource_dict(proxy_port,proxy_protocol)
@@ -113,6 +137,7 @@ class ws_proxy:
         wait_ws = resource_dict['semps']['wait_ws']
         wait_tcp = resource_dict['semps']['wait_sock']
         server_port = resource_key[0]
+        ws_server_entry_point = resource_key['entry_point']
         
         websocket_handle = websockets.sync.client.connect(ws_server_entry_point)
         print('连接ws服务器端成功')
@@ -145,7 +170,7 @@ class ws_proxy:
         
         data,address = socket_handle.recvfrom(4096)
         print('msg of socket ---> ws:',data)
-        websocket_handle.send_binary(data)
+        websocket_handle.send(data)
         resource_dict['address'] = address
         
         while True:
@@ -171,6 +196,7 @@ class ws_proxy:
         wait_ws.release()
         wait_ws.release()
         wait_udp.acquire() #等待udp句柄创建
+        socket_handle = resource_key['socket_handle']
         print('开启ws2socket转发')
         address = copy.deepcopy(resource_dict['address']) 
         while True:

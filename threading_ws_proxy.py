@@ -47,6 +47,12 @@ def ws2udp_handle(wait_ws:threading.Semaphore,wait_udp:threading.Semaphore):
         print('msg of ws ---> socket:',data)
         socket_handle.sendto(data,address)
 
+def start_ws_udp_proxy():
+    pass
+
+def start_ws_tcp_proxy():
+    pass
+
 def main():
     print('初始化ing')
     print('加载设置')

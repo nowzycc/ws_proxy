@@ -7,8 +7,8 @@
         "project_zombied":[
             {
                 "ws_server_entry_point" : "ws://192.168.100.78:8001/ws_test/",
-                "game_server_port" : 12344,
-                "game_server_protocol" : "udp"
+                "app_server_port" : 12344,
+                "app_server_protocol" : "udp"
             }
         ]
     }

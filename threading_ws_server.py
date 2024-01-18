@@ -40,7 +40,7 @@ def main():
         config = json.load(f)
     config = config[app_name]
     print(config)
-    with serve(ws2socket,"192.168.100.77", 9999) as server:
+    with serve(ws2socket,"192.168.100.77", 9999,open_timeout=180) as server:
         server.serve_forever()
 
 main()
